@@ -8,7 +8,6 @@
 #include "rooms.h"
 #include "input.h"
 #include "display.h"
-#include "size_checker.h"
 
 // Macro for amount of valid digits for pop_max
 #define MAX_DIGIT 5
@@ -52,17 +51,16 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
     do {
         DisplayPrompt(prompt_win, " Enter maximum occupancy: ");
         newroom->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
-        if (newroom->pop_max < 1)
-	{
+        if (newroom->pop_max < 1) {
             DisplayPrompt(prompt_win, " Max occupancy must be greater than 0 (press any key to continue)");
-	    wgetch(prompt_win);
-	}
+	        wgetch(prompt_win);
+	    }
             if (newroom->pop_max == 0) { 
-            free(newroom);
-            werase(prompt_win);
-            wrefresh(prompt_win);
-            return;
-        }
+                free(newroom);
+                werase(prompt_win);
+                wrefresh(prompt_win);
+                return;
+            }
 
     } while (newroom->pop_max < 1);
 
@@ -149,14 +147,14 @@ void deleteroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
     prompt_input_str(prompt_win, name, sizeof(name));
     if (strcmp(name, "outside") == 0) {
         DisplayPrompt(prompt_win, " Cannot delete reserved room 'outside'. (press any key to continue)");
-	wgetch(prompt_win);
+	    wgetch(prompt_win);
         return;
     }
     if (getroom(head, tail, &temp, name, prompt_win)) {
         char msg[128];
         snprintf(msg, sizeof(msg), " Room with name \"%s\" will be deleted (press any key to continue)", temp->name);
         DisplayPrompt(prompt_win,msg);
-	wgetch(prompt_win);
+	    wgetch(prompt_win);
         temp->prevnode->nextnode = temp->nextnode;
         temp->nextnode->prevnode = temp->prevnode;
         free(temp);
@@ -170,7 +168,7 @@ void deleteroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
         char msg[128];
         snprintf(msg, sizeof(msg), " Room with name \"%s\" could not be found (press any key to continue)", name);
         DisplayPrompt(prompt_win, msg);
-	wgetch(prompt_win);
+	    wgetch(prompt_win);
 
         werase(prompt_win);
         wrefresh(prompt_win);
