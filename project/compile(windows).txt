@@ -1,0 +1,1 @@
+gcc -Ilib -I/msys64/mingw64/include -o test source/main.c source/display.c source/input.c source/rooms.c source/simulation.c source/size_checker.c -lncurses -L/mingw64/bin -DNCURSES_STATIC
