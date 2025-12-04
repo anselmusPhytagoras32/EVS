@@ -60,6 +60,7 @@ Climate Change Commission. (2011, September 30). Disaster preparedness and first
 Harvard Humanitarian Initiative. (2024, November 6). Republic of the Philippines: Survey on disaster preparedness and climate change perceptions, 06 November 2024. ReliefWeb. https://reliefweb.int/report/philippines/republic-philippines-survey-disaster-preparedness-and-climate-change-perceptions-06-november-2024
 
 ## Authors
-Aaron Alexander Beard
-Manuel Miko Delola
+Aaron Alexander Beard<br>
+Manuel Miko Delola<br>
 Gebhel Anselm L. Santos
+
