@@ -56,4 +56,10 @@ A dynamically allocated stack will be used for storing rooms and other designati
 ## References
 Global Facility for Disaster Reduction and Recovery. (2016, June 27). Protecting lives and property from disaster risk in the Philippines. The World Bank. https://www.gfdrr.org/en/feature-story/protecting-lives-and-property-disaster-risk-philippines
 Climate Change Commission. (2011, September 30). Disaster preparedness and first aid handbook. https://climate.gov.ph/files/Disaster_Preparedness_First_Aid_Handbook.pdf
+
 Harvard Humanitarian Initiative. (2024, November 6). Republic of the Philippines: Survey on disaster preparedness and climate change perceptions, 06 November 2024. ReliefWeb. https://reliefweb.int/report/philippines/republic-philippines-survey-disaster-preparedness-and-climate-change-perceptions-06-november-2024
+
+## Authors
+Aaron Alexander Beard
+Manuel Miko Delola
+Gebhel Anselm L. Santos
