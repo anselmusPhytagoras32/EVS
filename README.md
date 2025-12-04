@@ -62,5 +62,6 @@ Harvard Humanitarian Initiative. (2024, November 6). Republic of the Philippines
 ## Authors
 Aaron Alexander Beard<br>
 Manuel Miko Delola<br>
-Gebhel Anselm L. Santos
+Gebhel Anselm Santos
+
 
