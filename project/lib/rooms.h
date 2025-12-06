@@ -23,7 +23,8 @@ void editroom(struct room** head, struct room** tail, WINDOW* prompt_win);
 void render(struct room* head, struct room* tail);
 int getroom(struct room** head, struct room** tail, struct room** temp, char name[], WINDOW* prompt_win);
 int countrooms(struct room* head, struct room* tail,  WINDOW* prompt_win);
-void sortrooms(struct room** head, struct room** tail,  WINDOW* prompt_win);
+int compare_rooms_desc(const void* a, const void* b);
+void sortrooms(struct room** head, struct room** tail, WINDOW *prompt_win);
 int getdistance(struct room* tofind, struct room* tail, int count, WINDOW* prompt_win);
 void cleanrooms(struct room** head, struct room** tail, bool start, WINDOW* prompt_win);
 

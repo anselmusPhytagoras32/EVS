@@ -117,7 +117,7 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
     newroom->pop_current = newroom->pop_start;
     newroom->pop_received = 0;
     newroom->pop_send_limit = newroom->pop_max * CHANGERATE / 100 + 1;
-    
+
     if (newroom->pop_send_limit > newroom->pop_max)
         newroom->pop_send_limit = newroom->pop_max;
 
@@ -188,11 +188,14 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
     int choice = 0;
     DisplayPrompt(prompt_win, " Enter name of room to edit: ");
     prompt_input_str(prompt_win, name, sizeof(name));
+    Up2low(name);
+
     if (getroom(head, tail, &toedit, name, prompt_win)) {
         char msg[128];
         snprintf(msg, sizeof(msg), " Room with name \"%s\" will be edited (press any key to continue)", toedit->name);
         DisplayPrompt(prompt_win, msg);
-	wgetch(prompt_win);
+	    wgetch(prompt_win);
+
         while (choice != '5') {
             char msg[128];
             snprintf(msg, sizeof(msg), " What would you like to edit for room %s [1]name [2]max occupancy [3]starting occupancy [4]evac path [5]exit ", toedit->name);
@@ -203,6 +206,8 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                 case '1': {
                     DisplayPrompt(prompt_win, " Enter updated room name: ");
                     prompt_input_str(prompt_win, name, sizeof(name));
+                    Up2low(name);
+
                     if (strcmp(name, "outside") == 0) {
                         DisplayPrompt(prompt_win, " The name 'outside' is reserved.");
                         break;
@@ -223,7 +228,7 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                     toedit->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                     while (toedit->pop_max < 1) {
                         DisplayPrompt(prompt_win, " Max occupancy must be greater than 0 (press any key to continue)");
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter updated room max occupancy: ");
                         toedit->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                     }
@@ -231,12 +236,12 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                         char msg[128];
                         snprintf(msg, sizeof(msg), "Starting occupancy %d must not be greater than max occupancy %d (press any key to continue)", toedit->pop_start, toedit->pop_max);
                         DisplayPrompt(prompt_win, msg);
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter updated room max occupancy: ");
                         toedit->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                         while (toedit->pop_max < 1) {
                             DisplayPrompt(prompt_win, " Max occupancy must be greater than 0 (press any key to continue)");
-			    wgetch(prompt_win);
+			                wgetch(prompt_win);
                             DisplayPrompt(prompt_win, " Enter updated room max occupancy: ");
                             toedit->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                         }
@@ -249,7 +254,7 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                     toedit->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                     while (toedit->pop_start < 0) {
                         DisplayPrompt(prompt_win, " Start occupancy must be non-negative (press any key to continue)");
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter updated room starting occupancy: ");
                         toedit->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                     }
@@ -257,12 +262,12 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                         char msg[128];
                         snprintf(msg, sizeof(msg), "Starting occupancy %d must not be greater than max occupancy %d (press any key to continue)", toedit->pop_start, toedit->pop_max);
                         DisplayPrompt(prompt_win, msg);
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter updated room starting occupancy: ");
                         toedit->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                         while (toedit->pop_start < 0) {
                             DisplayPrompt(prompt_win, " Start occupancy must be non-negative (press any key to continue)");
-			    wgetch(prompt_win);
+			                wgetch(prompt_win);
                             DisplayPrompt(prompt_win, " Enter updated room starting occupancy: ");
                             toedit->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                         }
@@ -325,7 +330,7 @@ int getroom(struct room** head, struct room** tail, struct room** temp, char nam
     return 0;
 }
 
-void render(struct room* head, struct room* tail) {
+/*void render(struct room* head, struct room* tail) {
     printf(" ------------------------------------------------  ");
     printf("|    Room Name    | Starting | Current | Maximum | ");
     for (struct room* temp = head->nextnode; temp != tail; temp = temp->nextnode) { //looks cursed but i think it's optimal
@@ -333,7 +338,7 @@ void render(struct room* head, struct room* tail) {
         printf("| %15s | %8d | %7d | %7d | ", temp->name, temp->pop_start, temp->pop_current, temp->pop_max);
     }
     printf(" ------------------------------------------------  ");
-}
+}*/
 
 int countrooms(struct room* head, struct room* tail, WINDOW *prompt_win) {
     int count = 0;
@@ -352,63 +357,74 @@ int countrooms(struct room* head, struct room* tail, WINDOW *prompt_win) {
     return count;
 }
 
+
+// Comparison function for qsort to sort rooms by distance (dist) in DESCENDING order.
+int compare_rooms_desc(const void* a, const void* b) {
+    const struct room* room_a = *(const struct room**)a;
+    const struct room* room_b = *(const struct room**)b;
+    
+    // Sort in DESCENDING order (Farthest distance first).
+    // If room_a is farther away (larger dist), it comes first (return -1).
+    if (room_a->dist > room_b->dist) {
+        return -1; 
+    }
+    // If room_b is farther away (larger dist), room_a is swapped down (return 1).
+    if (room_a->dist < room_b->dist) {
+        return 1;
+    }
+    
+    return 0;
+}
+
+
 void sortrooms(struct room** head, struct room** tail, WINDOW *prompt_win) {
-    bool sorted = false;
-    struct room* current = *head;
-    struct room* temp = NULL;
+    // Dereference head/tail once for cleaner use
+    struct room* sentinel_head = *head;
+    struct room* sentinel_tail = *tail;
 
-    int count = countrooms(*head, *tail, prompt_win);
+    int count = countrooms(sentinel_head, sentinel_tail, prompt_win);
 
-    /*
-     * first we need to get updated distance values for all rooms
-     * then we need to bubble sort the rooms
-     */
+    if (count <= 1) {
+        DisplayPrompt(prompt_win, " sortrooms: 0 or 1 room, no sort needed ");
+        return;
+    }
 
-    DisplayPrompt(prompt_win, " sortrooms getting room distances ");
+    DisplayPrompt(prompt_win, " sortrooms: Getting room distances and preparing array ");
+    
+    struct room** room_array = (struct room**)malloc(count * sizeof(struct room*));
+    if (room_array == NULL) {
+        DisplayPrompt(prompt_win, " sortrooms: Memory allocation failed! ");
+        return;
+    }
 
-    temp = *head;
+    struct room* current = sentinel_head->nextnode;
     for (int i = 0; i < count; i++) {
-        temp = temp->nextnode;
-        if (temp == *tail) break;
-        temp->dist = getdistance(temp, *tail, count, prompt_win);
+        current->dist = getdistance(current, sentinel_tail, count, prompt_win);
+        room_array[i] = current;
+        current = current->nextnode;
+    }
+    
+    DisplayPrompt(prompt_win, " sortrooms: Starting qsort() ");
+    qsort(room_array, count, sizeof(struct room*), compare_rooms_desc);
+
+    // Rebuild the Doubly Linked List from the Sorted Array
+    DisplayPrompt(prompt_win, " sortrooms: Rebuilding linked list ");
+    
+    // Linking the stuffs up
+    sentinel_head->nextnode = room_array[0];
+    room_array[0]->prevnode = sentinel_head;
+
+    for (int i = 0; i < count - 1; i++) {
+        room_array[i]->nextnode = room_array[i+1];
+        room_array[i+1]->prevnode = room_array[i];
     }
 
-    DisplayPrompt(prompt_win, " sortrooms beginning sort ");
+    room_array[count - 1]->nextnode = sentinel_tail;
+    sentinel_tail->prevnode = room_array[count - 1];
 
-    for (int i = 0; i < count && !sorted; i++) {
-        sorted = true;
-        current = *head;
-        for (int j = 0; (j < count - i - 1); j++) {
-            current = current->nextnode;
-            if (current == NULL || current->nextnode == NULL || current->nextnode == *tail) continue;
-            if (current->dist < current->nextnode->dist) {
-                sorted = false;
-                //in this case, current stays the same, and temp will be the node to be moved behind current
-                temp = current->nextnode; //set temp to next node
+    free(room_array);
 
-                // perform swap of nodes carefully (minimal change)
-                struct room* before = current->prevnode;
-                struct room* after = temp->nextnode;
-
-                // re-link before -> temp
-                if (before) before->nextnode = temp;
-                temp->prevnode = before;
-
-                // temp -> current
-                temp->nextnode = current;
-                current->prevnode = temp;
-
-                // current -> after
-                current->nextnode = after;
-                if (after) after->prevnode = current;
-
-                // move current pointer back so loop can continue correctly
-                current = temp;
-            }
-        }
-    }
     DisplayPrompt(prompt_win, " sortrooms sort finished ");
-
     werase(prompt_win);
     wrefresh(prompt_win);
 }
