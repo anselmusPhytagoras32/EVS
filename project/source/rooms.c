@@ -19,10 +19,11 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
     if (newroom == NULL) return;
     memset(newroom, 0, sizeof(*newroom));
 
-    DisplayPrompt(prompt_win, " Enter Room or Area Name: ");
+    DisplayPrompt(prompt_win, " Enter Room or Area Name:\t\t\t\t\t [Enter] Go back");
     prompt_input_str(prompt_win, newroom->name, sizeof(newroom->name));
+    Up2low(newroom->name);
 
-    if (strcmp(newroom->name, "^x") == 0) {
+    if (strcmp(newroom->name, "") == 0) {
         free(newroom);
         werase(prompt_win);
         wrefresh(prompt_win);
@@ -55,23 +56,23 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
             DisplayPrompt(prompt_win, " Max occupancy must be greater than 0 (press any key to continue)");
 	        wgetch(prompt_win);
 	    }
-            if (newroom->pop_max == 0) { 
-                free(newroom);
-                werase(prompt_win);
-                wrefresh(prompt_win);
-                return;
-            }
 
     } while (newroom->pop_max < 1);
+    
+       if (newroom->pop_max == -1) { 
+            free(newroom);
+            werase(prompt_win);
+            wrefresh(prompt_win);
+            return;
+        }
 
     do {
         DisplayPrompt(prompt_win, "Enter starting occupancy: ");
         newroom->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
-        if(newroom->pop_start < 0)
-	{
+        if(newroom->pop_start < 0){
             DisplayPrompt(prompt_win, "Start occupancy must be non-negative (press any key to continue)");
-	    wgetch(prompt_win);
-	}
+	        wgetch(prompt_win);
+	    }
 
         while (newroom->pop_start > newroom->pop_max) {
             char msg[128];
@@ -116,6 +117,7 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
     newroom->pop_current = newroom->pop_start;
     newroom->pop_received = 0;
     newroom->pop_send_limit = newroom->pop_max * CHANGERATE / 100 + 1;
+    
     if (newroom->pop_send_limit > newroom->pop_max)
         newroom->pop_send_limit = newroom->pop_max;
 
@@ -123,6 +125,8 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
     do {
         DisplayPrompt(prompt_win, " Enter name of room to be evacuated to (outside is valid): ");
         prompt_input_str(prompt_win, evac, sizeof(evac));
+        Up2low(evac);
+
         if (strcmp(evac, "outside") == 0) {
             temp = *tail;
             break;
@@ -269,6 +273,8 @@ void editroom(struct room** head, struct room** tail, WINDOW *prompt_win) {
                     char evac[32];
                     DisplayPrompt(prompt_win, " Enter name of room to be evacuated to(outside is a valid room): ");
                     prompt_input_str(prompt_win, evac, sizeof(evac));
+                    Up2low(evac);
+
                     if (strcmp(evac, "outside") == 0) {
                         toedit->evacroom = *tail;
                         break;
@@ -606,8 +612,11 @@ void cleanrooms(struct room** head, struct room** tail, bool start, WINDOW *prom
     wrefresh(prompt_win);
 }
 
-void Up2low(char word[10]) {
+void Up2low(char *word){
+    if(!word)
+        return;
+    
     for (int i = 0; i < strlen(word); i++) {
-        word[i] = tolower(word[i]);
+        word[i] = tolower((unsigned char)word[i]);
     }
 }

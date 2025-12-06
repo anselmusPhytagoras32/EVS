@@ -33,5 +33,6 @@ void recordsavedata(struct room* head, struct room* tail, WINDOW* prompt_win);
 
 
 int SelectPrompt(WINDOW *win);
+void Up2low(char *word);
 
 #endif

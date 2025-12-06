@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <ncurses.h>
-#include <string.h> // Ensure string.h is included for strcpy, strcat, etc.
+#include <string.h> 
 #include "rooms_struct.h"
 #include "simulation.h"
 #include "rooms.h"
@@ -27,8 +27,8 @@ void runsimulation(WINDOW* menu_win, WINDOW *prompt_win, struct room** head, str
     cleanrooms(head, tail, true, prompt_win);
 
     const char *header[] = {
-        "     _            _      _            ",
-        " ___(_)_ __ ___ _   _| | __ _| |_(_) ___ _ __ ",
+        "     _                 _       _            ",
+        " ___(_)_ __ ___  _   _| | __ _| |_(_) ___  _ __ ",
         "/ __| | '_ ` _ \\| | | | |/ _` | __| |/ _ \\| '_ \\",
         "\\__ \\ | | | | | | |_| | | (_| | |_| | (_) | | | |",
         "|___/_|_| |_| |_|\\__,_|_|\\__,_|\\__|_|\\___/|_| |_|",

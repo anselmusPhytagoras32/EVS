@@ -19,9 +19,8 @@ void Init()
     curs_set(0);
     noqiflush();
     
-    // VVV Add these back VVV
-    keypad(stdscr, TRUE);   // Re-add this
-    ESCDELAY = 25;          // Re-add this (reduces ESC sequence parsing delay)
+    keypad(stdscr, TRUE);   
+    ESCDELAY = 25;         
 }
 
 void SetWindows(WINDOW** menu_win, WINDOW** prompt_win)
@@ -32,23 +31,6 @@ void SetWindows(WINDOW** menu_win, WINDOW** prompt_win)
 	*prompt_win = newwin(0, 0, maxy-1, 0);
 
     keypad(*prompt_win, TRUE);
-}
-
-void DisplayMenu(WINDOW* menu)
-{
-
-	wclear(menu);
-	mvwprintw(menu, 1, 2, "1. insert a new room");
-	mvwprintw(menu, 2, 2, "2. delete a room");
-	mvwprintw(menu, 3, 2, "3. edit a room");
-	mvwprintw(menu, 4, 2, "4. run simuation");
-	mvwprintw(menu, 5, 2, "5. display list of rooms");
-	mvwprintw(menu, 6, 2, "6. save current plan");
-	mvwprintw(menu, 7, 2, "7. import saved plan");
-	mvwprintw(menu, 8, 2, "0. exit");
-
-	wrefresh(menu);
-
 }
 
 void DisplayPrompt(WINDOW* prompt_win, char* prompt_str)
