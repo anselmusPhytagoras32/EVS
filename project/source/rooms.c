@@ -76,9 +76,9 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
         while (newroom->pop_start > newroom->pop_max) {
             char msg[128];
             snprintf(msg, sizeof(msg), "Starting occupancy %d cannot be greater than maximum occupancy %d (press any key to continue)",
-                     newroom->pop_start, newroom->pop_max);
+            newroom->pop_start, newroom->pop_max);
             DisplayPrompt(prompt_win, msg);
-	    wgetch(prompt_win);
+	        wgetch(prompt_win);
 
             int choice = 0;
             do {
@@ -94,7 +94,7 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
                     newroom->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                     while (newroom->pop_max < 1) {
                         DisplayPrompt(prompt_win, " Max occupancy must be greater than 0 (press any key to continue)");
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter maximum occupancy: ");
                         newroom->pop_max = prompt_input_int(prompt_win, MAX_DIGIT);
                     }
@@ -104,7 +104,7 @@ void createroom(struct room** head, struct room** tail, WINDOW* prompt_win) {
                     newroom->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                     while (newroom->pop_start < 0) {
                         DisplayPrompt(prompt_win, " Start occupancy must be non-negative (press any key to continue)");
-			wgetch(prompt_win);
+			            wgetch(prompt_win);
                         DisplayPrompt(prompt_win, " Enter starting occupancy: ");
                         newroom->pop_start = prompt_input_int(prompt_win, MAX_DIGIT);
                     }
@@ -604,4 +604,10 @@ void cleanrooms(struct room** head, struct room** tail, bool start, WINDOW *prom
 
     werase(prompt_win);
     wrefresh(prompt_win);
+}
+
+void Up2low(char word[10]) {
+    for (int i = 0; i < strlen(word); i++) {
+        word[i] = tolower(word[i]);
+    }
 }

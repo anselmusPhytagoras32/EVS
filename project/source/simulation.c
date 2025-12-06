@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ncurses.h>
+#include <string.h> // Ensure string.h is included for strcpy, strcat, etc.
 #include "rooms_struct.h"
 #include "simulation.h"
 #include "rooms.h"
@@ -11,12 +12,23 @@ void runsimulation(WINDOW* menu_win, WINDOW *prompt_win, struct room** head, str
     int tosend;
     int sendlimit;
     int reclimit;
+    
+    // 1. SCROLLING VARIABLES
+    int scroll_offset = 0;
+    int total_rows = 0;
+    for (struct room* t = (*head)->nextnode; t != *tail; t = t->nextnode) {
+        total_rows++;
+    }
+    
+    // AGGRESSIVE FIX: Ensure keypad is TRUE on the window receiving input
+    keypad(menu_win, TRUE);
+
     sortrooms(head, tail, prompt_win);
     cleanrooms(head, tail, true, prompt_win);
 
     const char *header[] = {
-        "     _                  _      _            ",
-        " ___(_)_ __ ___  _   _| | __ _| |_(_) ___ _ __ ",
+        "     _            _      _            ",
+        " ___(_)_ __ ___ _   _| | __ _| |_(_) ___ _ __ ",
         "/ __| | '_ ` _ \\| | | | |/ _` | __| |/ _ \\| '_ \\",
         "\\__ \\ | | | | | | |_| | | (_| | |_| | (_) | | | |",
         "|___/_|_| |_| |_|\\__,_|_|\\__,_|\\__|_|\\___/|_| |_|",
@@ -28,95 +40,98 @@ void runsimulation(WINDOW* menu_win, WINDOW *prompt_win, struct room** head, str
     DisplayPrompt(prompt_win, "runsimulation initialization done, starting simulation");
 
     do {
+        // --- REDRAW STARTS HERE ---
         wclear(menu_win);
         wborder(menu_win, '|', '|', '-', '-', '+', '+', '+', '+');
         int maxy, maxx;
         getmaxyx(menu_win, maxy, maxx);
 
+        // Print header art
         for (int i = 0; i < header_rows; i++) {
             int tab = (maxx - header_width) / 2;
             mvwprintw(menu_win, i + 1, tab, "%s", header[i]);
         }
         
-        int y = header_rows + 4;
-        const int TABLE_WIDTH = 48; 
+        // DYNAMIC ROW CALCULATION
+        int y = header_rows + 4; // Starting Y position for the table
+        int max_data_y = maxy - 3; 
+        int available_lines = max_data_y - y; 
+        int visible_rows = available_lines / 2;
+        if (visible_rows < 1) visible_rows = 1;
+        
+        // SCROLL CLAMPING
+        int max_scroll_offset = total_rows - visible_rows;
+        if (max_scroll_offset < 0) max_scroll_offset = 0;
+        if (scroll_offset < 0) scroll_offset = 0;
+        if (scroll_offset > max_scroll_offset) scroll_offset = max_scroll_offset;
+
+        const int TABLE_WIDTH = 52; 
         int x = (maxx - TABLE_WIDTH) / 2; 
-   
         if (x < 1) x = 1; 
 
-        char buffer[17];
-        char room_info[128];
-        room_info[0] = '\0'; 
-        
-        char *vert_border = "----------------------------------------------------"; 
+        char *vert_border = "----------------------------------------------------";
         char *categories = "|     Room Name     | Starting | Current | Maximum |";
 
+        // Print Header
         mvwprintw(menu_win, y, x, vert_border);
         y += 1;
         mvwprintw(menu_win, y, x, categories);
         y += 1;
         
-        // Loop to print room data
-        for(struct room* temp = (*head)->nextnode; temp != *tail; temp = temp->nextnode, y++)
+        // Print room data
+        struct room* temp = (*head)->nextnode;
+        
+        // Skip rows based on scroll offset
+        for (int i = 0; i < scroll_offset; i++) {
+            if (temp == *tail) break;
+            temp = temp->nextnode;
+        }
+
+        int printed_rows = 0;
+        while(temp != *tail && printed_rows < visible_rows)
         {
-            // Check to prevent writing outside the window's vertical bounds
-            if (y + 2 >= maxy) break;
+            if (y + 1 >= max_data_y) break;
             
             mvwprintw(menu_win, y, x, vert_border);
             y += 1;
             
-            // Build the room data row string
-            strcat(room_info, "| ");
-            sprintf(buffer, "%-17s", temp->name); 
-            strcat(room_info, buffer);
-            strcpy(buffer, "");
-            strcat(room_info, " | ");
-            sprintf(buffer, "%-8d", temp->pop_start);
-            strcat(room_info, buffer);
-            strcpy(buffer, "");
-            strcat(room_info, " | ");
-            sprintf(buffer, "%-7d", temp->pop_current);
-            strcat(room_info, buffer);
-            strcpy(buffer, "");
-            strcat(room_info, " | ");
-            sprintf(buffer, "%-7d", temp->pop_max);
-            strcat(room_info, buffer);
-            strcpy(buffer, "");
-            strcat(room_info, " |");
+            mvwprintw(menu_win, y, x,
+                      "| %-17s | %-8d | %-7d | %-7d |",
+                      temp->name, temp->pop_start,
+                      temp->pop_current, temp->pop_max);
+            y += 1;
 
-            mvwprintw(menu_win, y, x, room_info);
-            strcpy(room_info, "");
+            temp = temp->nextnode;
+            printed_rows++;
         }
         
+        // DYNAMIC BOTTOM BORDER
         mvwprintw(menu_win, y, x, vert_border);
         
-        // The original simulation logic continues here...
+        // Prompt within the menu_win space
+        mvwprintw(menu_win, maxy - 2, 2, "Use ^/v to scroll. [1]Continue | [0]Exit");
+        wrefresh(menu_win); 
+
         for (struct room* sender = (*head)->nextnode; sender != *tail; sender = sender->nextnode) {
-            // ... (simulation logic remains unchanged) ...
             if (sender->evacroom == NULL) {
                 //just do nothing if room has nowhere to go
             }
             else {
                 if (sender->pop_current - sender->pop_received < sender->pop_send_limit) {
                     sendlimit = sender->pop_current - sender->pop_received;
-                    /*
-                     *amount we want to send is equal to the smaller number between population left from last cycle,
-                     *and limit of population that can be moved in one iteration
-                     */
                 }
                 else {
                     sendlimit = sender->pop_send_limit;
                 }
 
-                if (sender->evacroom == *tail) { //if we are going outside, just send it. no limits to what outside can accept
+                if (sender->evacroom == *tail) {
                     sender->pop_current -= sendlimit;
                     sender->pop_received = 0;
                 }
+                else {
+                    reclimit = sender->evacroom->pop_max - sender->evacroom->pop_current; 
 
-                else { //if we go to another room, then we need to calculate how much that room can accept
-                    reclimit = sender->evacroom->pop_max - sender->evacroom->pop_current; //amount of people room can still hold
-
-                    if (sendlimit >= reclimit) { //just pick amount to send based on lesser of the two limits
+                    if (sendlimit >= reclimit) { 
                         tosend = reclimit;
                     }
                     else {
@@ -131,29 +146,25 @@ void runsimulation(WINDOW* menu_win, WINDOW *prompt_win, struct room** head, str
             }
         }
         
-        mvwprintw(prompt_win, 2, 2, "Continue? [1]Yes / [0]No");
-        wrefresh(menu_win); 
-
-        // Lazy attempt to polish input taking --miko
         int response = 0;
-        while(response != '1' && response != '0')
-        {
-            response = wgetch(prompt_win);
-            switch(response)
-            {
-                case '1':
-                ongoing = 1;
-                break;
-                case '0':
-                ongoing = 0;
-                werase(prompt_win);
-                wrefresh(prompt_win);
-                break;
-            }
-        }
+        response = wgetch(menu_win); 
+        
+   
+        if (response == KEY_UP || response == 72) {
+            scroll_offset--;
+        } 
 
-        response = 0;
-        // resets response to default state --miko
-    }
-    while (ongoing);
+        else if (response == KEY_DOWN || response == 80) {
+            scroll_offset++;
+        } 
+        else if (response == '1') {
+            ongoing = 1; 
+        } else if (response == '0') {
+            ongoing = 0; 
+        } 
+        
+        werase(prompt_win);
+        wrefresh(prompt_win);
+
+    } while (ongoing);
 }

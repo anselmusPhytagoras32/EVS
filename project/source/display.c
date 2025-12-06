@@ -30,6 +30,8 @@ void SetWindows(WINDOW** menu_win, WINDOW** prompt_win)
 
 	*menu_win = newwin(maxy-2, 0, 0, 0);
 	*prompt_win = newwin(0, 0, maxy-1, 0);
+
+    keypad(*prompt_win, TRUE);
 }
 
 void DisplayMenu(WINDOW* menu)
