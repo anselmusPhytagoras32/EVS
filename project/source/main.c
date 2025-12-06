@@ -51,16 +51,23 @@ void draw_title_menu(WINDOW *menu_win, int width, int height) {
         int y = i + 3; // top padding
         mvwprintw(menu_win, y, x, "%s", title[i]);
     }
-    wattrset(menu_win,A_NORMAL);
-
-    // Draw menu centered vertically below title
-    int start_y = title_rows + 10; // padding after title
+    
+    int start_y = title_rows + 8;
+    // Compute left margin based on longest menu string
+    int max_len = 0;
     for(int i=0;i<menu_rows;i++){
         int len = strlen(menu[i]);
-        int x = (width - len) / 2;
-        mvwprintw(menu_win, start_y + i*2, x, "%s", menu[i]);
+        if(len > max_len) max_len = len;
     }
+    int start_x = (width - max_len) / 2;
 
+    // Draw menu left-aligned but centered block
+    for(int i=0;i<menu_rows;i++){
+        int y = start_y + i*2;
+        mvwprintw(menu_win, y, start_x, "%s", menu[i]);
+    }
+    
+    wattrset(menu_win,A_NORMAL);
     status_bar(menu_win,"Menu");
     wrefresh(menu_win);
 }
@@ -96,16 +103,13 @@ int main(void) {
     WINDOW *menu_win = newwin(height, window_width, 0, 0);
     WINDOW *prompt_win = newwin(6, window_width, height-6, 0);
 
-    // Disable scrolling in windows
     scrollok(stdscr, FALSE);
     scrollok(menu_win, FALSE);
     scrollok(prompt_win, FALSE);
     idlok(menu_win, FALSE);
     idlok(prompt_win, FALSE);
 
-    // Disable mouse completely
     mousemask(0, NULL);
-    // Hide mouse cursor
     mouseinterval(0);
 
     check_winsize(menu_win, height, window_width);

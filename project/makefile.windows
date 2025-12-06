@@ -1,0 +1,20 @@
+CC = gcc
+CFLAGS = -Wall -g -Ilib -I/msys64/mingw64/include -DNCURSES_STATIC
+LDFLAGS = -lncurses -L/mingw64/bin
+
+SRC = source/main.c \
+      source/display.c \
+      source/input.c \
+      source/rooms.c \
+      source/simulation.c \
+      source/size_checker.c
+
+TARGET = test
+
+$(TARGET): $(SRC)
+	$(CC) -o $(TARGET) $(SRC) $(CFLAGS) $(LDFLAGS)
+
+.PHONY: clean
+
+clean:
+	rm -f $(TARGET) $(TARGET).exe
